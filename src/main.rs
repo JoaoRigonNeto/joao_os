@@ -24,7 +24,25 @@ fn panic(_info: &PanicInfo) -> ! {
 		this is required due to the fact that the entry point is invoked directly by the OS or bootloader -
 		and not by a function. Instead of returning, the (exit) system call should be invoked.
 */
+
+
+
+static HELLO: &[u8] = b"Hello World!";
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+	//Raw pointer pointing to VGA buffer
+	let vga_buffer = 0xb8000 as *mut u8;
+	//Iterating through bytes of string
+	for (i, &byte) in HELLO.iter().enumerate() {
+			// Rust compiler can't tell if raw pointer is valid
+			//so unsafe is used meaning we are sure that the raw pointer is valid
+	        unsafe {
+	        	//Writting the string byte
+	            *vga_buffer.offset(i as isize * 2) = byte;
+				//Writting string byte color (Light cyan)
+	            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
+	        }
+	    }
 	loop{}
 }
